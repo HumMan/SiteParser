@@ -1,0 +1,61 @@
+﻿<Window x:Class="Viewer.GameDetails"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:bc="http://www.quickzip.org/BaseControls"
+        xmlns:local="clr-namespace:Viewer"
+        xmlns:converters="clr-namespace:Viewer.Converters"
+        mc:Ignorable="d"
+        Title="GameDetails" Height="300" Width="300"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <converters:UriToBitmapConverter x:Key="UriToBitmapConverter"></converters:UriToBitmapConverter>
+        <converters:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToVisibilityConverter"></converters:StringNullOrEmptyToVisibilityConverter>
+    </Window.Resources>
+    <Grid Margin="5" Grid.IsSharedSizeScope="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" ShowGridLines="False">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Content="{Binding Name}"/>
+            <Label Grid.Row="1" Content="{Binding AltName}" Visibility="{Binding AltName, Converter={StaticResource StringNullOrEmptyToVisibilityConverter}}"/>
+        </Grid>
+        <Grid Grid.Row="1" ShowGridLines="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" SharedSizeGroup="SomeText"></ColumnDefinition>
+                <ColumnDefinition Width="auto"></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Image Height="170" Width="120"  Source="{Binding Path=CoverImageUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+            <Label Grid.Column="1">Genre</Label>
+            <TextBlock Grid.Column="2" Padding="5" Text="{Binding Path=Genre}"></TextBlock>
+        </Grid>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Background="LightGray">
+            <Button Content="Description" Margin="5"/>
+            <Button Content="Screenshots" Margin="5"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="3" >
+        <Grid ShowGridLines="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" SharedSizeGroup="SomeText"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Orientation="Vertical" Margin="5">
+                <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[0].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+                <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[1].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+                <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[2].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+            </StackPanel>
+            <bc:HtmlTextBlock Html="{Binding Desc}"  Grid.Column="1"  TextWrapping="Wrap"/>
+        </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>

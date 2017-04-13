@@ -1,0 +1,142 @@
+﻿<Window x:Class="Viewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:Viewer.Converters"        
+        xmlns:customControls="clr-namespace:Viewer.CustomControls"
+        Closing="Window_Closing"
+        Title="MainWindow" Height="547" Width="525">
+    <Window.Resources>
+        <converters:UriToBitmapConverter x:Key="UriToBitmapConverter"></converters:UriToBitmapConverter>
+        <converters:ValueConverterGroup x:Key="IntToStarImage">
+            <converters:IntToStarImageUrl />
+            <converters:StaticUriToBitmapConverter  />            
+        </converters:ValueConverterGroup>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <Grid Margin="0,0,2,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Popup Name="popCountry" Placement="Bottom" StaysOpen="False" Width="200">
+            <Border Background="White" BorderBrush="Gray" BorderThickness="1,1,1,1">
+                <StackPanel Margin="5,5,5,15">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                        <Button Margin="0,0,0,0" Name="btnSelectAll" Click="btnSelectAll_Click">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <TextBlock Text="Select All" Foreground="Blue" Cursor="Hand" />
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Button Margin="10,0,0,0" Name="btnUnselectAll" Click="btnUnselectAll_Click">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <TextBlock Text="Select None" Foreground="Blue" Cursor="Hand" />
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+
+                    <ListBox x:Name="filterItems" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsChecked}" Content="{Binding Item}" Checked="ApplyFilters" Unchecked="ApplyFilters" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+        </Popup>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+            <StackPanel.Resources>
+                <Style x:Key="basicStyle">
+                    <Setter Property="Control.Margin" Value="5"/>
+                </Style>
+                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource basicStyle}"/>
+                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource basicStyle}"/>
+                <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource basicStyle}"/>
+                <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource basicStyle}"/>
+
+            </StackPanel.Resources>
+            <TextBlock Text="Filter:"></TextBlock>
+            <Button Name="btnGenreFilter" Content="Genre" Click="btnGenreFilter_Click"></Button>
+            <Button Name="btnYearFilter" Content="Year" Click="btnYearFilter_Click" ></Button>
+            <Button Name="btnPlatformFilter" Content="Platform" Click="btnPlatformFilter_Click" ></Button>
+            <TextBox Width="150" Text="{Binding SearchName, UpdateSourceTrigger=PropertyChanged}" TextChanged="TextBox_TextChanged"></TextBox>
+            <CheckBox Name="checkViewImages" Content="Gallery" IsChecked="True"/>
+        </StackPanel>
+        <DataGrid HorizontalAlignment="Stretch" 
+                  HorizontalContentAlignment="Stretch"  
+                  ColumnWidth="*"
+                  Grid.Row="1" AutoGenerateColumns="False" EnableColumnVirtualization="False" VirtualizingPanel.CacheLength="10"
+                  Name="GamesList" Margin="10,10,10,10" MouseDoubleClick="GamesList_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Width="60" Header="Name" IsReadOnly="True" Binding="{Binding Name, Mode=OneTime}"/>
+                <DataGridTextColumn Header="Genre" Width="60" Binding="{Binding Genre, Mode=OneTime}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Year" Width="40" Binding="{Binding Year, Mode=OneTime}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Platform" Width="90" Binding="{Binding Platform, Mode=OneTime}" IsReadOnly="True"/>
+                <DataGridTemplateColumn SortMemberPath="Stars" Header="Stars" Width="90" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <customControls:MyImage Width="90" Height ="30" Source="{Binding Stars, Mode=OneTime, IsAsync=True, Converter={StaticResource IntToStarImage}}">
+                                <Image.Triggers>
+                                    <EventTrigger RoutedEvent="customControls:MyImage.SourceChanged">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Image.Triggers>
+                            </customControls:MyImage>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Cover" Width="120" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <customControls:MyImage Width="120" Height ="160" Source="{Binding Path=CoverImageUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}">
+                                <Image.Triggers>
+                                    <EventTrigger RoutedEvent="customControls:MyImage.SourceChanged">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Image.Triggers>
+                            </customControls:MyImage>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Image" IsReadOnly="True" Width="*" Visibility="{Binding Source={x:Reference checkViewImages}, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ItemsControl VirtualizingStackPanel.IsVirtualizing="True" ScrollViewer.CanContentScroll="True" ItemsSource="{Binding Screenshots, Mode=OneTime}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Image  Height="100" Width="160"  Source="{Binding Path=ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.Template>
+                                    <ControlTemplate>
+                                        <customControls:ScrollViewerWithoutWheel Focusable="False" Height="Auto" Width="Auto" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Left">
+                                            <ItemsPresenter />
+                                        </customControls:ScrollViewerWithoutWheel>
+                                    </ControlTemplate>
+                                </ItemsControl.Template>
+                            </ItemsControl>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>
