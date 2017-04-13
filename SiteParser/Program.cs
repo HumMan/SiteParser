@@ -23,7 +23,7 @@ namespace SiteParser
                 Directory.CreateDirectory("data");
 
             if (!Directory.Exists("data/pages_html"))
-                Directory.CreateDirectory("pages_html");
+                Directory.CreateDirectory("data/pages_html");
 
             GameInfo[] info;
 

@@ -36,7 +36,7 @@ namespace SiteParser.CacheProvider
 #if PARALLEL
         static ConcurrentHashSet<string> cached = new ConcurrentHashSet<string>();
 #else
-        static HashSet<string> cacheLoaded = new HashSet<string>();
+        static HashSet<string> cached = new HashSet<string>();
 #endif
 
         private static HtmlDocument Download(string url)
@@ -58,7 +58,10 @@ namespace SiteParser.CacheProvider
             }
             else
             {
-                return Download($"catalog/?page={id}");
+                var result = Download(TargetSite + $"catalog/?page={id}");
+                result.Save(path);
+                CreateDir(path);
+                return result;
             }
         }
 
@@ -84,6 +87,7 @@ namespace SiteParser.CacheProvider
                     string HtmlResult = wc.UploadString(url, myParameters);
                     var result = new HtmlDocument();
                     result.LoadHtml(HtmlResult);
+                    CreateDir(path);
                     result.Save(path);
                     return result;
                 }
@@ -103,6 +107,7 @@ namespace SiteParser.CacheProvider
             else
             {
                 var result = Download(TargetSite+$"game/{gameId}.html");
+                CreateDir(path);
                 result.Save(path);
                 return result;
             }
@@ -121,9 +126,16 @@ namespace SiteParser.CacheProvider
             else
             {
                 var result = Download(TargetSite + $"game/screenshots/{gameId}.html");
+                CreateDir(path);
                 result.Save(path);
                 return result;
             }
+        }
+
+        private static void CreateDir(string path)
+        {
+            if (!Directory.GetParent(path).Exists)
+                Directory.CreateDirectory(Directory.GetParent(path).FullName);
         }
     }
 }
