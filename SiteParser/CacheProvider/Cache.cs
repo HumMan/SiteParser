@@ -12,7 +12,7 @@ namespace SiteParser.CacheProvider
     //TODO file cache, memory cache
     public class Cache
     {
-        public const string TargetSite = "http://www.old-games.ru/";
+        public const string TargetSite = "https://www.old-games.ru/";
 
         class ConcurrentHashSet<T>
         {
@@ -82,7 +82,7 @@ namespace SiteParser.CacheProvider
                 using (WebClient wc = new WebClient())
                 {
                     wc.Encoding = System.Text.Encoding.UTF8;
-                    wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+                    wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded; charset=UTF-8";
                     Console.WriteLine("Downloading comments {0}/{1}", url, myParameters);
                     string HtmlResult = wc.UploadString(url, myParameters);
                     var result = new HtmlDocument();

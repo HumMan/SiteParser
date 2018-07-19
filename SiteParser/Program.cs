@@ -27,9 +27,19 @@ namespace SiteParser
 
             GameInfo[] info;
 
-            if (!File.Exists(JsonModelSerializer.GamesListFileNameZip))
+            if (!File.Exists(JsonModelSerializer.CatalogZip))
             {
-                info = GamesIndex.ParseSite();
+                info = GamesIndex.ParseGamesCatalog();
+                modelSerialize.SaveCatalog(info);
+            }
+            else
+            {
+                info = modelSerialize.LoadCatalog();
+            }
+
+            if (!File.Exists(JsonModelSerializer.FullGamesListZip))
+            {
+                GamesIndex.EnrichGamesList(info);
                 modelSerialize.SaveGamesList(info);
             }
             else

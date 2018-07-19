@@ -14,7 +14,7 @@ namespace SiteParser.Parser
 {
     class GamesIndex
     {
-        public static GameInfo[] ParseSite()
+        public static GameInfo[] ParseGamesCatalog()
         {
             //загружаем все страницы
             var firstDoc = Cache.LoadPage(1);
@@ -44,43 +44,48 @@ namespace SiteParser.Parser
 #if PARALLEL
                 );
 #endif
+                var result = info.OrderBy(i => i.Id).ToArray();
 
-                {
-                    var ids = info.Select(i => i.Id).ToArray();
-                    Array.Sort(ids);
-                    var lastVal = ids[0];
-                    for (int i = 1; i < ids.Length; i++)
-                    {
-                        if (ids[i] == lastVal)
-                            throw new Exception("Duplicate record error");
-                        lastVal = ids[i];
-                    }
-                }
+                CheckDuplicates(result);
 
-                {
-                    int i = 1;
-                    int total = info.Count;
+                return result;
+            }
+        }
+
+        private static void CheckDuplicates(GameInfo[] info)
+        {
+            var lastVal = info[0].Id;
+            for (int i = 1; i < info.Length; i++)
+            {
+                if (info[i].Id == lastVal)
+                    throw new Exception("Duplicate record error");
+                lastVal = info[i].Id;
+            }
+        }
+
+        public static void EnrichGamesList(GameInfo[] info)
+        {
+            
+                int i = 1;
+                int total = info.Length;
 #if PARALLEL
                     Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (currIndex) =>
 #else
-                    foreach (var gameInfo in info)
+                foreach (var gameInfo in info)
 #endif
-                    {
+                {
 #if PARALLEL
                             var gameInfo = info[currIndex];
 #endif
-                        GameDesc.GetGameDesc(gameInfo);
+                    GameDesc.GetGameDesc(gameInfo);
 #if PARALLEL
                             if (Interlocked.Increment(ref i) % 500 == 0)
                                 Console.WriteLine("{0} gameDesc of \t{1} total", i, total);
                     });
 #else
-                    }
-#endif
                 }
-                var result = info.OrderBy(i => i.Id).ToArray();
-                return result;
-            }
+#endif
+            
         }
 
         private static GameInfo[] ParsePage(HtmlDocument doc)

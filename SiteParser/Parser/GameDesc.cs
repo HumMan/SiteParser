@@ -209,7 +209,7 @@ namespace SiteParser.Parser
             var scriptNode = doc.DocumentNode.SelectSingleNode(".//div[@class='main-content']/script[@type='text/javascript']");
             var threadIdStart = scriptNode.InnerText.IndexOf("\"gamethreadid\":");
 
-            var match = Regex.Match(scriptNode.InnerText, "\"gamethreadid\":\"(\\d+)\"");
+            var match = Regex.Match(scriptNode.InnerText, "\"gamethreadid\":\\s*\"(\\d+)\"");
             return match.Groups[1].Value;
         }
     }

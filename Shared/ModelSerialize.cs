@@ -10,13 +10,19 @@ namespace Shared.ModelSerialize
     {
         GameInfo[] LoadGamesList();
         void SaveGamesList(GameInfo[] list);
+        GameInfo[] LoadCatalog();
+        void SaveCatalog(GameInfo[] list);
     }
 
     public class JsonModelSerializer: IModelSerializer
     {
-        public const string GamesListFileName = "data/games.json";
-        public const string GamesListArchiveEntry = "games.json";
-        public const string GamesListFileNameZip = GamesListFileName + ".zip";
+        public const string FullGamesListFileName = "data/games.json";
+        public const string FullGamesListArchiveEntry = "games.json";
+        public const string FullGamesListZip = FullGamesListFileName + ".zip";
+
+        public const string CatalogFileName = "data/catalog.json";
+        public const string CatalogArchiveEntry = "catalog.json";
+        public const string CatalogZip = CatalogFileName + ".zip";
 
         private static void Serialize(object value, Stream s)
         {
@@ -43,7 +49,17 @@ namespace Shared.ModelSerialize
 
         public GameInfo[] LoadGamesList()
         {
-            using (var zipFileStream = new FileStream(GamesListFileNameZip, FileMode.Open))
+            return Load(FullGamesListZip);
+        }
+
+        public GameInfo[] LoadCatalog()
+        {
+            return Load(CatalogZip);
+        }
+
+        private static GameInfo[] Load(string fileName)
+        {
+            using (var zipFileStream = new FileStream(fileName, FileMode.Open))
             using (var archive = new ZipArchive(zipFileStream))
             {
                 ZipArchiveEntry entry = archive.Entries.First();
@@ -56,12 +72,22 @@ namespace Shared.ModelSerialize
 
         public void SaveGamesList(GameInfo[] list)
         {
-            using (var stream = new FileStream(GamesListFileNameZip, FileMode.Create))
+            Save(list, FullGamesListZip, FullGamesListArchiveEntry);
+        }
+
+        public void SaveCatalog(GameInfo[] list)
+        {
+            Save(list, CatalogZip, CatalogArchiveEntry);
+        }
+
+        private static void Save(GameInfo[] list, string fileName, string entryName)
+        {
+            using (var stream = new FileStream(fileName, FileMode.Create))
             {
                 using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Create))
                 {
-                    ZipArchiveEntry readmeEntry = archive.CreateEntry(GamesListArchiveEntry);
-                    Serialize(list, readmeEntry.Open());
+                    ZipArchiveEntry archiveEntry = archive.CreateEntry(entryName);
+                    Serialize(list, archiveEntry.Open());
                 }
             }
         }
