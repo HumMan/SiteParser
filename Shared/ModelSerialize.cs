@@ -60,7 +60,7 @@ namespace Shared.ModelSerialize
         private static GameInfo[] Load(string fileName)
         {
             using (var zipFileStream = new FileStream(fileName, FileMode.Open))
-            using (var archive = new ZipArchive(zipFileStream))
+            using (var archive = new ZipArchive(zipFileStream, ZipArchiveMode.Read))
             {
                 ZipArchiveEntry entry = archive.Entries.First();
                 {

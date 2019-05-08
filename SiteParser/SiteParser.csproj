@@ -51,7 +51,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheProvider\Cache.cs" />
+    <Compile Include="CacheProvider\ICache.cs" />
+    <Compile Include="CacheProvider\WithoutCache.cs" />
+    <Compile Include="CacheProvider\ZipArchiveCache.cs" />
+    <Compile Include="CacheProvider\FilesCache.cs" />
     <Compile Include="Parser\Assets.cs" />
     <Compile Include="Parser\GameDesc.cs" />
     <Compile Include="Parser\GamesIndex.cs" />

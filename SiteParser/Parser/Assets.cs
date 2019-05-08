@@ -12,27 +12,26 @@ namespace SiteParser.Parser
 {
     public class Assets
     {
-        public static void DownloadImages(GameInfo[] info)
+        public static void DownloadImages(string targetSite, GameInfo[] info)
         {
             var screenshots = info.SelectMany(i => i.Screenshots);
 
             Console.WriteLine("Downloading thumbs");
-            DownloadFilesList(screenshots.Select(i => i.ThumbUrl).ToList(), "assets");
+            DownloadFilesList(targetSite, screenshots.Select(i => i.ThumbUrl).ToList(), "assets");
             Console.WriteLine("Downloading screenshots");
-            DownloadFilesList(screenshots.Select(i => i.Url).ToList(), "assets");
+            DownloadFilesList(targetSite, screenshots.Select(i => i.Url).ToList(), "assets");
             Console.WriteLine("Downloading covers");
-            DownloadFilesList(info.Where(i => i.CoverImageUrl != null).Select(i => i.CoverImageUrl).ToList(), "assets");
+            DownloadFilesList(targetSite, info.Where(i => i.CoverImageUrl != null).Select(i => i.CoverImageUrl).ToList(), "assets");
         }
 
-        private static void DownloadFilesList(List<string> files, string dirName)
-        {
-
-            var i = 1;
+        private static void DownloadFilesList(string targetSite, List<string> files, string dirName)
+        {            
             var total = files.Count();
 #if PARALLEL
+            var i = 1;
             Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (currIndex) =>
 #else
-                foreach (var s in files)
+            foreach (var s in files)
 #endif
             {
 #if PARALLEL
@@ -46,7 +45,7 @@ namespace SiteParser.Parser
                 {
                     try
                     {
-                        var url = CacheProvider.Cache.TargetSite + s;
+                        var url = targetSite + s;
                         Console.WriteLine("Downloading file {0}", url);
                         using (var client = new WebClient())
                         {

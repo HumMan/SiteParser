@@ -82,6 +82,7 @@ namespace Shared.Model
         public List<TGameGroup> GameGroups { get; set; }
 
         public List<TGameComment> Comments { get; set; }
+        public string CommentsThreadId { get; set; }
 
         public List<TScreenshot> Screenshots { get; set; }
     }

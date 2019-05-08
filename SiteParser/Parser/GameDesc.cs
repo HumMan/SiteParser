@@ -10,11 +10,11 @@ namespace SiteParser.Parser
 {
     class GameDesc
     {
-        public static void GetGameDesc(GameInfo info)
+        public static void GetGameDesc(ICache cache, GameInfo info)
         {
             //заполняем url скриншотов
             {
-                var doc = Cache.LoadGameScreenshots(info.Id);
+                var doc = cache.LoadGameScreenshots(info.Id);
 
                 var node = doc.DocumentNode.SelectNodes(".//div[@class='main-content']/div[@id='game_screens']/div[@id='screensarea']/ul[@class='gamescreens']/li[@class='game_screen']");
                 if (node != null)
@@ -32,7 +32,7 @@ namespace SiteParser.Parser
                 }
             }
             {
-                var doc = Cache.LoadGameDesc(info.Id);
+                var doc = cache.LoadGameDesc(info.Id);
                 {
                     var node = doc.DocumentNode.SelectSingleNode(".//div[@class='main-content']//div[@id='reviewtext']");
                     info.Desc = Shared.TrimHtml(node);
@@ -132,10 +132,11 @@ namespace SiteParser.Parser
                         ParseComments(doc, info.Comments);
 
                         string threadId = FindThreadId(doc);
+                        info.CommentsThreadId = threadId;
 
                         for (int i = 2; i <= commentsPagesCount; i++)
                         {
-                            var subDoc = Cache.LoadComments(info.Id, i, threadId);
+                            var subDoc = cache.LoadComments(info.Id, i, threadId);
                             ParseComments(subDoc, info.Comments);
                         }
                     }

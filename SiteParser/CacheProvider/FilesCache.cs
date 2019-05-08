@@ -9,35 +9,12 @@ using System.Threading.Tasks;
 
 namespace SiteParser.CacheProvider
 {
-    //TODO file cache, memory cache
-    public class Cache
+    /// <summary>
+    /// Кешируем страницы в виде файловой структуры   
+    /// </summary>
+    public class FilesCache: ICache
     {
-        public const string TargetSite = "https://www.old-games.ru/";
-
-        class ConcurrentHashSet<T>
-        {
-            public HashSet<T> Data = new HashSet<T>();
-
-            public void Add(T Val)
-            {
-                lock (Data) Data.Add(Val);
-            }
-
-            public void Remove(T Val)
-            {
-                lock (Data) Data.Remove(Val);
-            }
-            public bool Contains(T Val)
-            {
-                lock (Data) return Data.Contains(Val);
-            }
-        }
-
-#if PARALLEL
-        static ConcurrentHashSet<string> cached = new ConcurrentHashSet<string>();
-#else
-        static HashSet<string> cached = new HashSet<string>();
-#endif
+        public readonly string TargetSite;
 
         private static HtmlDocument Download(string url)
         {
@@ -45,15 +22,24 @@ namespace SiteParser.CacheProvider
             Console.WriteLine("Downloading {0}", url);
             return http.Load(url);
         }
+        private static void CreateDir(string path)
+        {
+            if (!Directory.GetParent(path).Exists)
+                Directory.CreateDirectory(Directory.GetParent(path).FullName);
+        }
 
-        public static HtmlDocument LoadPage(int id)
+        public FilesCache(string targetSite)
+        {
+            TargetSite = targetSite;
+        }
+
+        public HtmlDocument LoadPage(int id)
         {
             var path = $"data/pages_html/{id}.html.cached";
             if (File.Exists(path))
             {
                 var result = new HtmlDocument();
                 result.Load(path);
-                cached.Add(path);
                 return result;
             }
             else
@@ -65,14 +51,13 @@ namespace SiteParser.CacheProvider
             }
         }
 
-        public static HtmlDocument LoadComments(int gameId, int id, string threadId)
+        public HtmlDocument LoadComments(int gameId, int id, string threadId)
         {
             var path = $"data/pages_html/{gameId}/comments/{id}.html.cached";
             if (File.Exists(path))
             {
                 var result = new HtmlDocument();
                 result.Load(path);
-                cached.Add(path);
                 return result;
             }
             else
@@ -94,14 +79,13 @@ namespace SiteParser.CacheProvider
             }
         }
 
-        public static HtmlDocument LoadGameDesc(int gameId)
+        public HtmlDocument LoadGameDesc(int gameId)
         {
             var path = $"data/pages_html/{gameId}/desc.html.cached";
             if (File.Exists(path))
             {
                 var result = new HtmlDocument();
                 result.Load(path);
-                cached.Add(path);
                 return result;
             }
             else
@@ -113,14 +97,13 @@ namespace SiteParser.CacheProvider
             }
         }
 
-        public static HtmlDocument LoadGameScreenshots(int gameId)
+        public HtmlDocument LoadGameScreenshots(int gameId)
         {
             var path = $"data/pages_html/{gameId}/screenshots.html.cached";
             if (File.Exists(path))
             {
                 var result = new HtmlDocument();
                 result.Load(path);
-                cached.Add(path);
                 return result;
             }
             else
@@ -132,10 +115,6 @@ namespace SiteParser.CacheProvider
             }
         }
 
-        private static void CreateDir(string path)
-        {
-            if (!Directory.GetParent(path).Exists)
-                Directory.CreateDirectory(Directory.GetParent(path).FullName);
-        }
+
     }
 }

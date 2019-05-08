@@ -14,10 +14,10 @@ namespace SiteParser.Parser
 {
     class GamesIndex
     {
-        public static GameInfo[] ParseGamesCatalog()
+        public static GameInfo[] ParseGamesCatalog(ICache cache)
         {
             //загружаем все страницы
-            var firstDoc = Cache.LoadPage(1);
+            var firstDoc = cache.LoadPage(1);
             int maxPage;
             //максимальное кол-во страниц
             maxPage = FindMaxPages(firstDoc);
@@ -32,7 +32,7 @@ namespace SiteParser.Parser
                 for (int currIndex = 2; currIndex <= maxPage; currIndex++)
 #endif
                 {
-                    var doc = Cache.LoadPage(currIndex);
+                    var doc = cache.LoadPage(currIndex);
                     var parseResult = ParsePage(doc);
 #if PARALLEL
                     lock (info)
@@ -63,13 +63,12 @@ namespace SiteParser.Parser
             }
         }
 
-        public static void EnrichGamesList(GameInfo[] info)
-        {
-            
-                int i = 1;
+        public static void EnrichGamesList(ICache cache, GameInfo[] info)
+        {       
                 int total = info.Length;
 #if PARALLEL
-                    Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (currIndex) =>
+                int i = 1;
+                Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (currIndex) =>
 #else
                 foreach (var gameInfo in info)
 #endif
@@ -77,7 +76,7 @@ namespace SiteParser.Parser
 #if PARALLEL
                             var gameInfo = info[currIndex];
 #endif
-                    GameDesc.GetGameDesc(gameInfo);
+                    GameDesc.GetGameDesc(cache, gameInfo);
 #if PARALLEL
                             if (Interlocked.Increment(ref i) % 500 == 0)
                                 Console.WriteLine("{0} gameDesc of \t{1} total", i, total);
@@ -92,7 +91,8 @@ namespace SiteParser.Parser
         {
             var result = new List<GameInfo>();
             var gamesTable = doc.DocumentNode.SelectSingleNode(".//div[@class='main-content']/table");
-            foreach (var tr in gamesTable.SelectNodes("tr[td]"))
+            var items = gamesTable.SelectNodes("tr[td]");
+            foreach (var tr in items)
             {
                 GameInfo gameInfo = new GameInfo();
                 var gameNodes = tr.ChildNodes.Where(i => i.Name == "td").ToArray();

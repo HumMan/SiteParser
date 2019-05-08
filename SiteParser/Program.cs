@@ -1,9 +1,11 @@
 ﻿using Shared.Model;
 using Shared.ModelSerialize;
+using SiteParser.CacheProvider;
 using SiteParser.Parser;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -17,8 +19,10 @@ namespace SiteParser
 
         static void Main(string[] args)
         {
+            var TargetSite = "https://www.old-games.ru/";
+
             var startTime = DateTime.Now;
-            Console.WriteLine("Parser started "+ startTime.ToString("yyyy.MM.dd HH-mm-ss"));
+            Console.WriteLine("Parser started " + startTime.ToString("yyyy.MM.dd HH-mm-ss"));
             if (!Directory.Exists("data"))
                 Directory.CreateDirectory("data");
 
@@ -26,30 +30,41 @@ namespace SiteParser
                 Directory.CreateDirectory("data/pages_html");
 
             GameInfo[] info;
+            {
 
-            if (!File.Exists(JsonModelSerializer.CatalogZip))
-            {
-                info = GamesIndex.ParseGamesCatalog();
-                modelSerialize.SaveCatalog(info);
+                if (!File.Exists(JsonModelSerializer.CatalogZip))
+                {
+                    using (var cache = new ZipArchiveCache(TargetSite, "data/catalog_cache.zip", true))
+                    {
+                        info = GamesIndex.ParseGamesCatalog(cache);
+                    }
+                    modelSerialize.SaveCatalog(info);
+                }
+                else
+                {
+                    info = modelSerialize.LoadCatalog();
+                }
             }
-            else
             {
-                info = modelSerialize.LoadCatalog();
+                if (!File.Exists(JsonModelSerializer.FullGamesListZip))
+                {
+                    using (var cache = new ZipArchiveCache(TargetSite, "data/pages_cache.zip", true))
+                    {
+                        GamesIndex.EnrichGamesList(cache, info);
+                    }
+                    Console.WriteLine("Pages list parsed " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss"));
+                    modelSerialize.SaveGamesList(info);
+                }
+                else
+                {
+                    info = modelSerialize.LoadGamesList();
+                }
+
             }
 
-            if (!File.Exists(JsonModelSerializer.FullGamesListZip))
-            {
-                GamesIndex.EnrichGamesList(info);
-                modelSerialize.SaveGamesList(info);
-            }
-            else
-            {
-                info = modelSerialize.LoadGamesList();
-            }
-            Console.WriteLine("Pages list parsed " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss"));
-            Assets.DownloadImages(info);
+            Assets.DownloadImages(TargetSite, info);
             Console.WriteLine("Screenshots downloaded " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss"));
-            Console.WriteLine("All time " + (DateTime.Now-startTime).ToString());
+            Console.WriteLine(string.Format("All time {0} sec", (DateTime.Now - startTime).TotalSeconds));
             Console.WriteLine("Finished");
             Console.ReadKey();
         }
