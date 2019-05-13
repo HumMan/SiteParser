@@ -56,5 +56,8 @@ namespace SiteParser.CacheProvider
             var result = Download(TargetSite + $"game/screenshots/{gameId}.html");
             return result;
         }
+        public void Dispose()
+        {
+        }
     }
 }

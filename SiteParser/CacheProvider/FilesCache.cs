@@ -15,6 +15,7 @@ namespace SiteParser.CacheProvider
     public class FilesCache: ICache
     {
         public readonly string TargetSite;
+        private readonly string _cacheDirPath;
 
         private static HtmlDocument Download(string url)
         {
@@ -28,9 +29,14 @@ namespace SiteParser.CacheProvider
                 Directory.CreateDirectory(Directory.GetParent(path).FullName);
         }
 
-        public FilesCache(string targetSite)
+        public FilesCache(string targetSite, string cacheDirPath)
         {
             TargetSite = targetSite;
+
+            _cacheDirPath = cacheDirPath;
+
+            if (!Directory.Exists(_cacheDirPath))
+                Directory.CreateDirectory(_cacheDirPath);
         }
 
         public HtmlDocument LoadPage(int id)
@@ -115,6 +121,8 @@ namespace SiteParser.CacheProvider
             }
         }
 
-
+        public void Dispose()
+        {            
+        }
     }
 }

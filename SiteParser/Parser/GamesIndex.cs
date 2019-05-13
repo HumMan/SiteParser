@@ -3,6 +3,7 @@ using Shared.Model;
 using SiteParser.CacheProvider;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -26,30 +27,112 @@ namespace SiteParser.Parser
 
                 var info = new List<GameInfo>();
                 info.AddRange(ParsePage(firstDoc));
-#if PARALLEL
-                Parallel.For(2, maxPage + 1, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (currIndex) =>
-#else
+
                 for (int currIndex = 2; currIndex <= maxPage; currIndex++)
-#endif
                 {
                     var doc = cache.LoadPage(currIndex);
                     var parseResult = ParsePage(doc);
-#if PARALLEL
-                    lock (info)
-#endif
                     {
                         info.AddRange(parseResult);
                     }
                 }
-#if PARALLEL
-                );
-#endif
                 var result = info.OrderBy(i => i.Id).ToArray();
 
                 CheckDuplicates(result);
 
                 return result;
             }
+        }
+
+        public static void CompareCatalog(GameInfo[] oldList, GameInfo[] newList, out int newGames, out int deletedGames)
+        {
+            newGames = 0;
+            deletedGames = 0;
+            int i = 0, k = 0;
+            while (i < oldList.Length && k < newList.Length)
+            {
+                if (i == oldList.Length - 1)
+                {
+                    k++;
+                    newGames++;
+                }
+                else if (k == newList.Length - 1)
+                {
+                    i++;
+                    deletedGames++;
+                }
+                else if (oldList[i].Id < newList[k].Id)
+                {
+                    i++;
+                    deletedGames++;
+                }
+                else if (oldList[i].Id > newList[k].Id)
+                {
+                    k++;
+                    newGames++;
+                }
+                else
+                {
+                    k++;
+                    i++;
+                }
+            }
+        }
+
+        public class CompareResult
+        {
+            public int newScreenshots;
+            public int newGameGroups;
+            public int newComments;
+            public int newRecomended;
+            public int newMods;
+
+            public int deletedScreenshots;
+            public int deletedGameGroups;
+            public int deletedComments;
+            public int deletedRecomended;
+            public int deletedMods;
+        }
+
+
+        public static void CompareGames(GameInfo[] oldList, GameInfo[] newList, ref CompareResult result)
+        {
+            int i = 0, k = 0;
+            while (i < oldList.Length && k < newList.Length)
+            {
+                if (oldList[i].Id < newList[k].Id)
+                {
+                    i++;
+                }
+                else if (oldList[i].Id > newList[k].Id)
+                {
+                    k++;
+                }
+                else
+                {
+                    CompareGame(oldList[i], newList[k], ref result);
+                    i++;
+                    k++;
+                }
+            }
+        }
+
+        private static void Delta(int newCount, int oldCount, ref int newResult, ref int deletedResult)
+        {
+            var result = newCount - oldCount;
+            if (result >= 0)
+                newResult += result;
+            else
+                deletedResult += -result;
+        }
+
+        public static void CompareGame(GameInfo oldGame, GameInfo newGame, ref CompareResult result)
+        {
+            Delta(newGame.Comments.Count, oldGame.Comments.Count, ref result.newComments, ref result.deletedComments);
+            Delta(newGame.GameGroups.Count, oldGame.GameGroups.Count, ref result.newGameGroups, ref result.deletedGameGroups);
+            Delta(newGame.Mods.Count, oldGame.Mods.Count, ref result.newMods, ref result.deletedMods);
+            Delta(newGame.Recomended.Count, oldGame.Recomended.Count, ref result.newRecomended, ref result.deletedRecomended);
+            Delta(newGame.Screenshots.Count, oldGame.Screenshots.Count, ref result.newScreenshots, ref result.deletedScreenshots);
         }
 
         private static void CheckDuplicates(GameInfo[] info)
@@ -64,27 +147,12 @@ namespace SiteParser.Parser
         }
 
         public static void EnrichGamesList(ICache cache, GameInfo[] info)
-        {       
-                int total = info.Length;
-#if PARALLEL
-                int i = 1;
-                Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (currIndex) =>
-#else
-                foreach (var gameInfo in info)
-#endif
-                {
-#if PARALLEL
-                            var gameInfo = info[currIndex];
-#endif
-                    GameDesc.GetGameDesc(cache, gameInfo);
-#if PARALLEL
-                            if (Interlocked.Increment(ref i) % 500 == 0)
-                                Console.WriteLine("{0} gameDesc of \t{1} total", i, total);
-                    });
-#else
-                }
-#endif
-            
+        {
+            int total = info.Length;
+            foreach (var gameInfo in info)
+            {
+                GameDesc.GetGameDesc(cache, gameInfo);
+            }
         }
 
         private static GameInfo[] ParsePage(HtmlDocument doc)

@@ -16,13 +16,13 @@ namespace Shared.ModelSerialize
 
     public class JsonModelSerializer: IModelSerializer
     {
-        public const string FullGamesListFileName = "data/games.json";
-        public const string FullGamesListArchiveEntry = "games.json";
-        public const string FullGamesListZip = FullGamesListFileName + ".zip";
+        private const string FullGamesListFileName = "data/games.json";
+        private const string FullGamesListArchiveEntry = "games.json";
+        private const string FullGamesListZip = FullGamesListFileName + ".zip";
 
-        public const string CatalogFileName = "data/catalog.json";
-        public const string CatalogArchiveEntry = "catalog.json";
-        public const string CatalogZip = CatalogFileName + ".zip";
+        private const string CatalogFileName = "data/catalog.json";
+        private const string CatalogArchiveEntry = "catalog.json";
+        private const string CatalogZip = CatalogFileName + ".zip";
 
         private static void Serialize(object value, Stream s)
         {
@@ -75,9 +75,29 @@ namespace Shared.ModelSerialize
             Save(list, FullGamesListZip, FullGamesListArchiveEntry);
         }
 
+        public bool GamesListExists()
+        {
+            return File.Exists(FullGamesListZip);
+        }
+
+        public void RemoveGamesList()
+        {
+            File.Move(FullGamesListZip, FullGamesListZip + ".old");
+        }
+
         public void SaveCatalog(GameInfo[] list)
         {
             Save(list, CatalogZip, CatalogArchiveEntry);
+        }
+
+        public bool CatalogExists()
+        {
+            return File.Exists(CatalogZip);
+        }
+
+        public void RemoveCatalog()
+        {
+            File.Move(CatalogZip, CatalogZip + ".old");
         }
 
         private static void Save(GameInfo[] list, string fileName, string entryName)

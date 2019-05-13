@@ -27,16 +27,8 @@ namespace SiteParser.Parser
         private static void DownloadFilesList(string targetSite, List<string> files, string dirName)
         {            
             var total = files.Count();
-#if PARALLEL
-            var i = 1;
-            Parallel.For(0, total, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (currIndex) =>
-#else
             foreach (var s in files)
-#endif
             {
-#if PARALLEL
-                var s = files[currIndex];
-#endif
                 var path = Path.Combine("data", dirName, s.TrimStart('/'));
                 var dir = Path.GetDirectoryName(path);
                 if (!Directory.Exists(dir))
@@ -57,14 +49,7 @@ namespace SiteParser.Parser
                         Console.WriteLine(ex.ToString());
                     }
                 }
-#if PARALLEL
-                if (Interlocked.Increment(ref i) % 500 == 0)
-                    Console.WriteLine("{0} downloaded of \t{1} total", i, total);
-#endif
             }
-#if PARALLEL
-                );
-#endif
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SiteParser.CacheProvider
 {
-    interface ICache
+    interface ICache: IDisposable
     {
         HtmlDocument LoadPage(int id);
         HtmlDocument LoadComments(int gameId, int id, string threadId);
