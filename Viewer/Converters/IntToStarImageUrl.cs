@@ -14,7 +14,12 @@ namespace Viewer.Converters
         {
             if (value == null)
                 return null;
-            var intValue = (int)value;
+            int intValue = -1;
+            if(value is int)
+                intValue = (int)value;
+            else if(value is decimal)
+                intValue = (int)Math.Round((decimal)value);
+
             if (intValue == -1)
                 return null;
             return string.Format(@"/img/rating/star{0}.png", intValue);

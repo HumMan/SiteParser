@@ -160,6 +160,7 @@ namespace SiteParser
 
                        if (o.PreloadImages)
                        {
+                           Console.WriteLine("Downloading screenshots.. " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss"));
                            Assets.DownloadImages(o.TargetSite, info);
                            Console.WriteLine("Screenshots downloaded " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss"));
                        }

@@ -4,14 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:bc="http://www.quickzip.org/BaseControls"
-        xmlns:local="clr-namespace:Viewer"
+        xmlns:customControls="clr-namespace:Viewer.CustomControls"
         xmlns:converters="clr-namespace:Viewer.Converters"
         mc:Ignorable="d"
-        Title="GameDetails" Height="300" Width="300"
+        Title="GameDetails" Height="344.389" Width="551.275"
         Closing="Window_Closing">
     <Window.Resources>
         <converters:UriToBitmapConverter x:Key="UriToBitmapConverter"></converters:UriToBitmapConverter>
         <converters:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToVisibilityConverter"></converters:StringNullOrEmptyToVisibilityConverter>
+        <converters:ValueConverterGroup x:Key="IntToStarImage">
+            <converters:IntToStarImageUrl />
+            <converters:StaticUriToBitmapConverter  />
+        </converters:ValueConverterGroup>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
     <Grid Margin="5" Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
@@ -32,30 +37,102 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" SharedSizeGroup="SomeText"></ColumnDefinition>
                 <ColumnDefinition Width="auto"></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Image Height="170" Width="120"  Source="{Binding Path=CoverImageUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
-            <Label Grid.Column="1">Genre</Label>
-            <TextBlock Grid.Column="2" Padding="5" Text="{Binding Path=Genre}"></TextBlock>
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <Grid  ShowGridLines="False" Height="auto" VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0">Genre</Label>
+                    <TextBlock Grid.Column="1" Grid.Row="0" Padding="5" Text="{Binding Path=Genre}"></TextBlock>
+                    <Label Grid.Column="0" Grid.Row="1">Publisher</Label>
+                    <TextBlock Grid.Column="1" Grid.Row="1" Padding="5" Text="{Binding Path=Publisher}"></TextBlock>
+                    <Label Grid.Column="0" Grid.Row="2">Year</Label>
+                    <TextBlock Grid.Column="1" Grid.Row="2" Padding="5" Text="{Binding Path=Year}"></TextBlock>
+                    <Label Grid.Column="0" Grid.Row="3">Platform</Label>
+                    <TextBlock Grid.Column="1" Grid.Row="3" Padding="5" Text="{Binding Path=Platform}"></TextBlock>
+                    <Label Grid.Column="0" Grid.Row="4">Review rating</Label>
+                    <customControls:MyImage  Grid.Column="1" Grid.Row="4" Width="90" Height ="30" Source="{Binding Stars, Mode=OneTime, IsAsync=True, Converter={StaticResource IntToStarImage}}">
+                        <Image.Triggers>
+                            <EventTrigger RoutedEvent="customControls:MyImage.SourceChanged">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Image.Triggers>
+                    </customControls:MyImage>
+                    <Label Grid.Column="0" Grid.Row="5">Users rating</Label>
+                    <customControls:MyImage  Grid.Column="1" Grid.Row="5" Width="90" Height ="30" Source="{Binding UsersStars, Mode=OneTime, IsAsync=True, Converter={StaticResource IntToStarImage}}">
+                        <Image.Triggers>
+                            <EventTrigger RoutedEvent="customControls:MyImage.SourceChanged">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Image.Triggers>
+                    </customControls:MyImage>
+                </Grid>
+
+            </StackPanel>
+
         </Grid>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Background="LightGray">
-            <Button Content="Description" Margin="5"/>
-            <Button Content="Screenshots" Margin="5"/>
+        <StackPanel Grid.Row="2" Margin="5" Orientation="Horizontal" Background="LightGray">
+            <!--<Button Content="Description" Margin="5"/>
+            <Button Content="Screenshots" Margin="5"/>-->
         </StackPanel>
         <ScrollViewer Grid.Row="3" >
-        <Grid ShowGridLines="False">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto" SharedSizeGroup="SomeText"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            
-            <StackPanel Orientation="Vertical" Margin="5">
-                <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[0].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
-                <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[1].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
-                <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[2].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+            <StackPanel Orientation="Vertical">
+                <Grid ShowGridLines="False">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" SharedSizeGroup="SomeText"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[0].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+                        <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[1].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+                        <Image Height="100" Width="160"  Source="{Binding Path=Screenshots[2].ThumbUrl, Mode=OneTime, IsAsync=True,Converter={StaticResource UriToBitmapConverter}}"/>
+                    </StackPanel>
+                    <bc:HtmlTextBlock Html="{Binding Desc}"  Grid.Column="1"  TextWrapping="Wrap"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Comments}" Margin="5">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ShowGridLines="False">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Content="{Binding UserName}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Comment}" TextWrapping="Wrap"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    </ItemsControl>
             </StackPanel>
-            <bc:HtmlTextBlock Html="{Binding Desc}"  Grid.Column="1"  TextWrapping="Wrap"/>
-        </Grid>
         </ScrollViewer>
     </Grid>
 </Window>
