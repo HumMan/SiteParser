@@ -1,6 +1,7 @@
 # SiteParser
 
 Парсер и оффлайн просмотрщик скриншотов игр с сайта https://www.old-games.ru/
+
 Был создан из-за необходимости найти игру по её скриншотам.
 
 <img src="https://raw.githubusercontent.com/HumMan/SiteParser/master/screenshots/1.png" width="600">
